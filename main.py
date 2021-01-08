@@ -45,9 +45,17 @@ def create_new_model():
 
 def main():
     model = create_new_model()
-    train_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/train'
-    test_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/test'
-    validation_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/validation'
+    long = False
+    if os.path.isdir('C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification'):
+        train_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification/Reduced_Data/train'
+        test_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification/Reduced_Data/test'
+        validation_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification/Reduced_Data/validation'
+        long = True
+    else:
+        train_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/train'
+        test_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/test'
+        validation_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/validation'
+
     start_time = time.time()
 
     train_datagen = ImageDataGenerator(
@@ -84,6 +92,11 @@ def main():
         epochs=30,
         validation_data=validation_generator,
         validation_steps=50)
+
+    if long:
+        model.save('C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification')
+    else:
+        model.save('trained_model')
 
     print("Runtime: %s" % (time.time() - start_time))
 
