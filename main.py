@@ -93,10 +93,7 @@ def main():
         validation_data=validation_generator,
         validation_steps=50)
 
-    if long:
-        model.save('C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification')
-    else:
-        model.save('trained_model')
+    model.save('trained_model')
 
     print("Runtime: %s" % (time.time() - start_time))
 
