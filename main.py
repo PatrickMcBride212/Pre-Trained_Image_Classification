@@ -4,7 +4,6 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras import layers
 from keras import models
 import os
-import numpy as np
 import time
 import matplotlib.pyplot as plt
 
@@ -45,15 +44,13 @@ def create_new_model():
 
 def main():
     model = create_new_model()
-    long = False
     if os.path.isdir('C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification'):
         train_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification/Reduced_Data/train'
-        test_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification/Reduced_Data/test'
+        # test_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification/Reduced_Data/test'
         validation_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification/Reduced_Data/validation'
-        long = True
     else:
         train_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/train'
-        test_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/test'
+        # test_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/test'
         validation_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/validation'
 
     start_time = time.time()
