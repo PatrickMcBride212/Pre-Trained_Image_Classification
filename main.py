@@ -42,7 +42,7 @@ def create_new_model():
     return model
 
 
-def main():
+def generate_and_train_initial_model():
     model = create_new_model()
     if os.path.isdir('C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification'):
         train_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification/Reduced_Data/train'
@@ -90,11 +90,48 @@ def main():
         validation_data=validation_generator,
         validation_steps=50)
 
-    model.save('trained_model')
+    model.save('trained_model', include_optimizer=False)
 
     print("Runtime: %s" % (time.time() - start_time))
 
     plot_history(history)
+
+
+def fine_tune_model():
+    default_model_name = 'trained_model'
+    while not os.path.exists(default_model_name):
+        print("Warning, default model name not present in working directory.")
+        print("Default model name: ", default_model_name)
+        print("Please either generate a model, or specify the name of the model file you want to use.")
+        valid_input = False
+        while not valid_input:
+            user_input = input("Type g for generation, or r for renaming. ")
+            if user_input == 'g':
+                print("Generating initial model:")
+                generate_and_train_initial_model()
+            elif user_input == 'r':
+                default_model_name = input("Please enter the name of the model file you want to use: ")
+                break
+            else:
+                print("Invalid input, try again")
+
+    # now the path to the model file should exist, we can begin fine tuning.
+    model = models.load_model(default_model_name)
+
+
+def main():
+    valid_input = False
+    while not valid_input:
+        print("Generate completely new model, or fine-tune existing?")
+        user_input = input("Type g for generate, or f for fine-tune. ")
+        if user_input == 'g':
+            valid_input = True
+            generate_and_train_initial_model()
+        elif user_input == 'f':
+            valid_input = True
+            fine_tune_model()
+        else:
+            print("Warning, invalid input, try again.")
 
 
 if __name__ == '__main__':
