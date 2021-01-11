@@ -118,6 +118,7 @@ def fine_tune_model():
     # now the path to the model file should exist, we can begin fine tuning.
     model = models.load_model(default_model_name)
 
+    # note: you'll have to recompile the model since no optimizer is specified
 
 def main():
     valid_input = False
