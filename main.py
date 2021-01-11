@@ -30,6 +30,8 @@ def plot_history(history):
 
     plt.show()
 
+    plt.savefig('Generated Model Graphs')
+
 
 def create_new_model():
     conv_base = VGG16(weights='imagenet', include_top=False, input_shape=(150, 150, 3))
