@@ -6,6 +6,14 @@ from keras import models
 import os
 import time
 import matplotlib.pyplot as plt
+from keras.utils import plot_model
+import keras
+import pydot
+import pydotplus
+from pydotplus import graphviz
+from keras.utils.vis_utils import plot_model
+from keras.utils.vis_utils import model_to_dot
+keras.utils.vis_utils.pydot = pydot
 
 
 def smooth_curve(points, factor=0.8):
@@ -195,17 +203,42 @@ def fine_tune_model():
     model.save('Fine-Tuned_Model', include_optimizer=False)
 
 
+def get_model_architecture():
+    user_input = False
+    while not user_input:
+        filename = input("Please enter filename to get architecture of: ")
+        if os.path.isfile(filename):
+            model = models.load_model(filename)
+            model.summary()
+            model.get_layer(name='vgg16').summary()
+            plot_model(
+                model,
+                to_file="Model_Visualized.png",
+                show_shapes=False,
+                show_dtype=False,
+                show_layer_names=True,
+                rankdir="TB",
+                expand_nested=True,
+                dpi=96)
+            user_input = True
+        else:
+            print("File does not exist in working directory, please move here or input valid file name.")
+
+
 def main():
     valid_input = False
     while not valid_input:
-        print("Generate completely new model, or fine-tune existing?")
-        user_input = input("Type g for generate, or f for fine-tune. ")
+        print("Generate completely new model, fine-tune existing, or get model architecture?")
+        user_input = input("Type g for generate, f for fine-tune, or a for get model architecture. ")
         if user_input == 'g':
             valid_input = True
             generate_and_train_initial_model()
         elif user_input == 'f':
             valid_input = True
             fine_tune_model()
+        elif user_input == 'a':
+            valid_input = True
+            get_model_architecture()
         else:
             print("Warning, invalid input, try again.")
 
