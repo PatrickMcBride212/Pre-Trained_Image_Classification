@@ -8,6 +8,34 @@ import time
 import matplotlib.pyplot as plt
 
 
+def create_data_generators(train_dir, validation_dir):
+    train_datagen = ImageDataGenerator(
+        rescale=1. / 255,
+        rotation_range=40,
+        width_shift_range=0.2,
+        height_shift_range=0.2,
+        shear_range=0.2,
+        zoom_range=0.2,
+        horizontal_flip=True,
+        fill_mode='nearest')
+
+    test_datagen = ImageDataGenerator(rescale=1./255)
+
+    train_generator = train_datagen.flow_from_directory(
+        train_dir,
+        target_size=(150, 150),
+        batch_size=20,
+        class_mode='binary')
+
+    validation_generator = test_datagen.flow_from_directory(
+        validation_dir,
+        target_size=(150, 150),
+        batch_size=20,
+        class_mode='binary')
+
+    return train_datagen, test_datagen, train_generator, validation_generator
+
+
 def plot_history(history):
     acc = history.history['acc']
     val_acc = history.history['val_acc']
@@ -57,29 +85,7 @@ def generate_and_train_initial_model():
 
     start_time = time.time()
 
-    train_datagen = ImageDataGenerator(
-        rescale=1. / 255,
-        rotation_range=40,
-        width_shift_range=0.2,
-        height_shift_range=0.2,
-        shear_range=0.2,
-        zoom_range=0.2,
-        horizontal_flip=True,
-        fill_mode='nearest')
-
-    test_datagen = ImageDataGenerator(rescale=1./255)
-
-    train_generator = train_datagen.flow_from_directory(
-        train_dir,
-        target_size=(150, 150),
-        batch_size=20,
-        class_mode='binary')
-
-    validation_generator = test_datagen.flow_from_directory(
-        validation_dir,
-        target_size=(150, 150),
-        batch_size=20,
-        class_mode='binary')
+    train_datagen, test_datagen, train_generator, validation_generator = create_data_generators(train_dir, validation_dir)
 
     model.compile(loss='binary_crossentropy',
                   optimizer=optimizers.RMSprop(lr=2e-5),
@@ -100,6 +106,15 @@ def generate_and_train_initial_model():
 
 
 def fine_tune_model():
+    if os.path.isdir('C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification'):
+        train_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification/Reduced_Data/train'
+        # test_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification/Reduced_Data/test'
+        validation_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification/Reduced_Data/validation'
+    else:
+        train_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/train'
+        # test_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/test'
+        validation_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/validation'
+
     default_model_name = 'trained_model'
     while not os.path.exists(default_model_name):
         print("Warning, default model name not present in working directory.")
@@ -120,7 +135,36 @@ def fine_tune_model():
     # now the path to the model file should exist, we can begin fine tuning.
     model = models.load_model(default_model_name)
 
-    # note: you'll have to recompile the model since no optimizer is specified
+    # Setting the last few layers of the vgg16 base to be trainable
+    model.summary()
+    model.get_layer(name='vgg16').summary()
+    model.get_layer(name='vgg16').trainable = True
+    set_trainable = False
+    for layer in model.get_layer(name='vgg16').layers:
+        if layer.name == 'block5_conv1':
+            set_trainable = True
+        if set_trainable:
+            layer.trainable = True
+        else:
+            layer.trainable = False
+
+    # creating the data augmentation again
+
+    train_datagen, test_datagen, train_generator, validation_generator = create_data_generators(train_dir, validation_dir)
+
+    # recompilation of the network with low learning rate
+
+    model.compile(loss='binary_crossentropy',
+                  optimizer=optimizers.RMSprop(lr=1e-5),
+                  metrics=['acc'])
+
+    history = model.fit_generator(train_generator,
+                                  steps_per_epoch=100,
+                                  epochs=100,
+                                  validation_data=validation_generator,
+                                  validation_steps=50)
+    plot_history(history)
+
 
 def main():
     valid_input = False
