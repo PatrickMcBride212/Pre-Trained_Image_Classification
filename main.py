@@ -8,6 +8,17 @@ import time
 import matplotlib.pyplot as plt
 
 
+def smooth_curve(points, factor=0.8):
+    smoothed_points = []
+    for point in points:
+        if smoothed_points:
+            previous = smoothed_points[-1]
+            smoothed_points.append(previous * factor + point * (1 - factor))
+        else:
+            smoothed_points.append(point)
+    return smoothed_points
+
+
 def create_data_generators(train_dir, validation_dir):
     train_datagen = ImageDataGenerator(
         rescale=1. / 255,
@@ -36,29 +47,37 @@ def create_data_generators(train_dir, validation_dir):
     return train_datagen, test_datagen, train_generator, validation_generator
 
 
-def plot_history(history):
+def plot_history(history, save_title, smooth=False):
     acc = history.history['acc']
     val_acc = history.history['val_acc']
     loss = history.history['loss']
     val_loss = history.history['val_loss']
 
     epochs = range(1, len(acc) + 1)
-
-    plt.plot(epochs, acc, 'bo', label='Training acc')
-    plt.plot(epochs, val_acc, 'b', label='Validation acc')
+    if smooth:
+        plt.plot(epochs, smooth_curve(acc), 'bo', label='Training acc')
+        plt.plot(epochs, smooth_curve(val_acc), 'b', label='Validation acc')
+    else:
+        plt.plot(epochs, acc, 'bo', label='Training acc')
+        plt.plot(epochs, val_acc, 'b', label='Validation acc')
     plt.title('Training and validation accuracy')
     plt.legend()
 
     plt.figure()
 
-    plt.plot(epochs, loss, 'bo', label='Training loss')
-    plt.plot(epochs, val_loss, 'b', label='Validation loss')
+    if smooth:
+        plt.plot(epochs, smooth_curve(loss), 'bo', label='Training loss')
+        plt.plot(epochs, smooth_curve(val_loss), 'b', label='Validation loss')
+    else:
+        plt.plot(epochs, loss, 'bo', label='Training loss')
+        plt.plot(epochs, val_loss, 'b', label='Validation loss')
+
     plt.title('Training and validation loss')
     plt.legend()
 
     plt.show()
 
-    plt.savefig('Generated Model Graphs')
+    plt.savefig(save_title)
 
 
 def create_new_model():
@@ -102,17 +121,17 @@ def generate_and_train_initial_model():
 
     print("Runtime: %s" % (time.time() - start_time))
 
-    plot_history(history)
+    plot_history(history, 'Generated_Graphs', True)
 
 
 def fine_tune_model():
     if os.path.isdir('C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification'):
         train_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification/Reduced_Data/train'
-        # test_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification/Reduced_Data/test'
+        test_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification/Reduced_Data/test'
         validation_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Pre-Trained_Image_Classification/Reduced_Data/validation'
     else:
         train_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/train'
-        # test_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/test'
+        test_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/test'
         validation_dir = 'C:/Users/mcbri/PycharmProjects/Pre-Trained_Image_Classification/Reduced_Data/validation'
 
     default_model_name = 'trained_model'
@@ -163,7 +182,17 @@ def fine_tune_model():
                                   epochs=100,
                                   validation_data=validation_generator,
                                   validation_steps=50)
-    plot_history(history)
+    plot_history(history, 'Fine_Tuned_Graphs', True)
+
+    test_generator = test_datagen.flow_from_directory(
+        test_dir,
+        target_size=(150, 150),
+        batch_size=20,
+        class_mode='binary')
+    test_loss, test_acc = model.evaluate_generator(test_generator, steps=50)
+    print('test acc:', test_acc)
+
+    model.save('Fine-Tuned_Model', include_optimizer=False)
 
 
 def main():
